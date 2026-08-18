@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+backend/.env
+backend/*.db
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Local tooling and OS files
+.DS_Store
+.vscode/
+*.log
