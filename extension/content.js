@@ -11,7 +11,7 @@ function extractJob() {
   const salary = (body.match(/(?:₹|\$|€|£)\s?[\d,.]+\s?(?:k|K|LPA|lpa)?(?:\s?[-–]\s?(?:₹|\$|€|£)?\s?[\d,.]+\s?(?:k|K|LPA|lpa)?)?/i) || [''])[0];
   const work_mode = /hybrid/i.test(body) ? 'Hybrid' : /remote/i.test(body) ? 'Remote' : /on[- ]?site/i.test(body) ? 'Onsite' : 'Unknown';
   const employment_type = /internship/i.test(body) ? 'Internship' : /contract/i.test(body) ? 'Contract' : /part[- ]?time/i.test(body) ? 'Part-time' : 'Full-time';
-  return {company, role: title.slice(0, 120), location: text(['[data-testid="job-location"]', '[class*="location"]']) || 'See job posting', salary: salary.slice(0, 80) || null, employment_type, work_mode, job_url: location.href, source: host, status: 'Applied', priority: 'Normal', next_step: null, notes: 'Captured automatically by CareerFlow.'};
+  return {company: company.slice(0, 120), role: title.slice(0, 120), location: (text(['[data-testid="job-location"]', '[class*="location"]']) || 'See job posting').slice(0, 120), salary: salary.slice(0, 80) || null, employment_type, work_mode, job_url: location.href.slice(0, 500), source: host.slice(0, 80), status: 'Applied', priority: 'Normal', next_step: null, notes: 'Captured automatically by CareerFlow.'};
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => { if (message.type === 'extract-job') sendResponse(extractJob()); });
