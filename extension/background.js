@@ -1,8 +1,8 @@
-const API = 'http://localhost:8000';
+const API = 'https://careerflow-one.vercel.app/api';
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type !== 'capture-job') return;
-  capture(message.job).then(sendResponse).catch(error => sendResponse({ok: false, reason: `CareerFlow is unreachable. Is the backend running? (${error.message})`}));
+  capture(message.job).then(sendResponse).catch(error => sendResponse({ok: false, reason: `CareerFlow is unreachable. Check the live deployment. (${error.message})`}));
   return true;
 });
 
