@@ -44,4 +44,11 @@ Open `chrome://extensions`, enable Developer mode, choose **Load unpacked**, and
 
 ## Configuration
 
-Copy `backend/.env.example` to `backend/.env` and set a persistent `CAREERFLOW_SECRET_KEY` before deploying. For a hosted frontend, copy `frontend/.env.example` and set `VITE_API_URL` to the public API URL. Use HTTPS and secure cookie-based sessions for a production deployment.
+First, create the .env files from the example files:
+
+* Copy backend/.env.example to backend/.env
+* Set a permanent value for CAREERFLOW_SECRET_KEY
+* If the frontend is hosted separately, copy frontend/.env.example to frontend/.env
+* Set VITE_API_URL to your backend API URL
+
+For production, use HTTPS and enable secure cookie-based sessions.
