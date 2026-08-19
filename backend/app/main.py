@@ -74,6 +74,9 @@ def record_failed_login(client_ip: str):
         login_blocks[client_ip] = (monotonic() + duration, strike)
         attempts.clear()
 
+@app.get("/")
+def api_root(): return {"service": "CareerFlow API", "status": "healthy"}
+
 @app.get("/health")
 def health(): return {"status": "healthy"}
 
