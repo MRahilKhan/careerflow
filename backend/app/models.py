@@ -27,3 +27,12 @@ class Application(Base):
     applied_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    subject: Mapped[str] = mapped_column(String(120))
+    message: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)

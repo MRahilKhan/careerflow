@@ -8,8 +8,8 @@ from sqlalchemy import inspect, select, text
 from sqlalchemy.orm import Session
 from .auth import create_token, current_user, hash_password, verify_password
 from .database import Base, engine, get_db
-from .models import Application, User
-from .schemas import ApplicationCreate, ApplicationOut, ApplicationUpdate, DashboardStats, Login, Token, UserCreate, UserOut
+from .models import Application, Feedback, User
+from .schemas import ApplicationCreate, ApplicationOut, ApplicationUpdate, DashboardStats, FeedbackCreate, FeedbackOut, Login, Token, UserCreate, UserOut
 
 Base.metadata.create_all(bind=engine)
 
@@ -45,7 +45,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     }
     return JSONResponse(status_code=422, content={"detail": messages.get(field, "Please check the highlighted fields and try again.")})
 
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"], allow_origin_regex=r"chrome-extension://.*", allow_credentials=True, allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "https://careerflow-one.vercel.app"], allow_origin_regex=r"chrome-extension://.*", allow_credentials=True, allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 
 LOGIN_WINDOW_SECONDS = 15 * 60
 LOGIN_MAX_ATTEMPTS = 5
@@ -115,7 +115,10 @@ def create_application(payload: ApplicationCreate, db: Session = Depends(get_db)
 def update_application(application_id: int, payload: ApplicationUpdate, db: Session = Depends(get_db), user: User = Depends(current_user)):
     item = db.scalar(select(Application).where(Application.id == application_id, Application.user_id == user.id))
     if not item: raise HTTPException(404, "Application not found")
-    for key, value in payload.model_dump().items(): setattr(item, key, value)
+    updates = payload.model_dump(exclude_unset=True)
+    if not updates:
+        raise HTTPException(400, "Provide at least one field to update")
+    for key, value in updates.items(): setattr(item, key, value)
     db.commit(); db.refresh(item); return item
 
 @app.delete("/applications/{application_id}", status_code=204)
@@ -123,6 +126,12 @@ def delete_application(application_id: int, db: Session = Depends(get_db), user:
     item = db.scalar(select(Application).where(Application.id == application_id, Application.user_id == user.id))
     if not item: raise HTTPException(404, "Application not found")
     db.delete(item); db.commit()
+
+@app.post("/feedback", response_model=FeedbackOut, status_code=201)
+def create_feedback(payload: FeedbackCreate, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    feedback = Feedback(**payload.model_dump(), user_id=user.id)
+    db.add(feedback); db.commit(); db.refresh(feedback)
+    return feedback
 
 @app.get("/dashboard", response_model=DashboardStats)
 def dashboard(db: Session = Depends(get_db), user: User = Depends(current_user)):

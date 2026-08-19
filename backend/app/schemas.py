@@ -44,8 +44,19 @@ class ApplicationBase(BaseModel):
 class ApplicationCreate(ApplicationBase):
     pass
 
-class ApplicationUpdate(ApplicationBase):
-    pass
+class ApplicationUpdate(BaseModel):
+    company: str | None = Field(default=None, min_length=2, max_length=120)
+    role: str | None = Field(default=None, min_length=2, max_length=120)
+    location: str | None = Field(default=None, max_length=120)
+    employment_type: str | None = Field(default=None, pattern="^(Full-time|Part-time|Contract|Internship|Freelance)$")
+    work_mode: str | None = Field(default=None, pattern="^(Remote|Hybrid|Onsite|Unknown)$")
+    salary: str | None = Field(default=None, max_length=80)
+    priority: str | None = Field(default=None, pattern="^(Low|Normal|High)$")
+    next_step: str | None = Field(default=None, max_length=180)
+    job_url: str | None = Field(default=None, max_length=500)
+    source: str | None = Field(default=None, max_length=80)
+    status: str | None = Field(default=None, pattern="^(Wishlist|Applied|Interviewing|Offer|Rejected)$")
+    notes: str | None = Field(default=None, max_length=1500)
 
 class ApplicationOut(ApplicationBase):
     model_config = ConfigDict(from_attributes=True)
@@ -58,3 +69,14 @@ class DashboardStats(BaseModel):
     offers: int
     response_rate: int
     pipeline: dict[str, int]
+
+class FeedbackCreate(BaseModel):
+    subject: str = Field(min_length=3, max_length=120)
+    message: str = Field(min_length=10, max_length=2000)
+
+class FeedbackOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    subject: str
+    message: str
+    created_at: datetime
