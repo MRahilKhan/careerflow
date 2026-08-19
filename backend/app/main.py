@@ -13,7 +13,7 @@ from .schemas import ApplicationCreate, ApplicationOut, ApplicationUpdate, Dashb
 
 Base.metadata.create_all(bind=engine)
 
-# Keep existing local SQLite databases usable when the workspace gains new fields.
+
 def ensure_application_columns():
     existing = {column["name"] for column in inspect(engine).get_columns("applications")}
     additions = {
