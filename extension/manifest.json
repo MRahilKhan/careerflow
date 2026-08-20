@@ -2,10 +2,23 @@
   "manifest_version": 3,
   "name": "CareerFlow Job Capture",
   "version": "1.0.0",
-  "description": "Automatically save job applications to your CareerFlow workspace.",
-  "permissions": ["storage", "activeTab", "tabs"],
-  "host_permissions": ["https://careerflow-one.vercel.app/*", "http://localhost:8000/*", "<all_urls>"],
-  "action": {"default_popup": "popup.html", "default_title": "Save to CareerFlow"},
+  "description": "Detect job postings on LinkedIn, Indeed, Glassdoor and other sites, and save them straight to your CareerFlow pipeline.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://careerflow-liart.vercel.app/*", "<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Save to CareerFlow",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "background": {"service_worker": "background.js"},
   "content_scripts": [{"matches": ["<all_urls>"], "js": ["content.js"], "run_at": "document_idle"}]
 }

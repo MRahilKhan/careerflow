@@ -1,1 +1,20 @@
-*{box-sizing:border-box}body{width:320px;margin:0;padding:20px;background:#fbfbf8;color:#26322a;font:13px Arial,sans-serif}.brand{font-weight:700;font-size:17px;margin-bottom:26px}.brand span{background:#26392e;color:#fff;border-radius:6px;padding:5px 8px;margin-right:5px}.eyebrow{color:#758078;font:10px monospace;letter-spacing:1px;margin:0 0 9px}h1{font:600 24px Georgia,serif;line-height:1.1;margin:0 0 18px}input{display:block;width:100%;border:1px solid #dfe3db;border-radius:7px;padding:11px;margin:9px 0;outline-color:#668067}button{width:100%;border:0;border-radius:7px;padding:11px;background:#26392e;color:#fff;font-weight:700;margin-top:8px;cursor:pointer}.secondary{background:transparent;color:#657166;border:1px solid #dfe3db}.toggle{display:flex;gap:8px;align-items:flex-start;color:#68746b;font-size:11px;line-height:1.4;margin:20px 0}.toggle input{width:auto;margin:0}.preview{line-height:1.7;color:#59665b}#preview{background:#f0f3ed;border-radius:8px;padding:12px;line-height:1.7;margin-bottom:14px}#message,#message2{font-size:11px;color:#67816d;min-height:14px}
+*{box-sizing:border-box}
+body{width:320px;margin:0;padding:20px;background:#fbfbf8;color:#26322a;font:13px Arial,sans-serif;max-height:560px;overflow-y:auto}
+.brand{font-weight:700;font-size:17px;margin-bottom:20px;display:flex;align-items:center}
+.brand span{background:#26392e;color:#fff;border-radius:6px;padding:5px 8px;margin-right:8px;font-style:normal}
+.eyebrow{color:#758078;font:10px monospace;letter-spacing:1px;margin:0 0 12px}
+h1{font:600 22px Georgia,serif;line-height:1.15;margin:0 0 18px}
+input,select,textarea{display:block;width:100%;border:1px solid #dfe3db;border-radius:7px;padding:9px 10px;margin:4px 0 0;outline-color:#668067;font:inherit;background:#fff;color:#26322a}
+input[readonly]{color:#8a948b;background:#f4f5f2}
+.field{display:block;font-size:11px;color:#67746a;font-weight:600;margin-top:10px}
+.row{display:flex;gap:10px}
+.row .field{flex:1}
+button{width:100%;border:0;border-radius:7px;padding:11px;background:#26392e;color:#fff;font-weight:700;margin-top:14px;cursor:pointer;font-size:13px}
+button:hover{background:#1e2f25}
+.secondary{background:transparent;color:#657166;border:1px solid #dfe3db;margin-top:8px}
+.secondary:hover{background:#f0f3ed}
+.toggle{display:flex;gap:8px;align-items:flex-start;color:#68746b;font-size:11px;line-height:1.4;margin:16px 0 0;font-weight:400}
+.toggle input{width:auto;margin:2px 0 0}
+.msg{font-size:11px;color:#67816d;min-height:14px;margin:10px 0 0}
+.hint{font-size:11px;color:#8a948b;margin:14px 0 0;text-align:center}
+.hint a{color:#3f5c46}
