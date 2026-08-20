@@ -8,12 +8,13 @@ const statuses = ['All', 'Wishlist', 'Applied', 'Interviewing', 'Offer', 'Reject
 
 function App() {
   const [token,setToken]=useState(localStorage.getItem('careerflow_token'));
+  const [authChecking,setAuthChecking]=useState(()=>!!localStorage.getItem('careerflow_token'));
   const [now,setNow]=useState(()=>new Date());
   const [items,setItems]=useState([]), [stats,setStats]=useState(null), [user,setUser]=useState(null), [filter,setFilter]=useState('All'), [query,setQuery]=useState(''), [showModal,setShowModal]=useState(false), [editing,setEditing]=useState(null), [loading,setLoading]=useState(false), [toast,setToast]=useState(''), [authMode,setAuthMode]=useState('login'), [error,setError]=useState(''), [feedbackOpen,setFeedbackOpen]=useState(false), [focusJobLink,setFocusJobLink]=useState(false);
   const headers=()=>({'Content-Type':'application/json', Authorization:`Bearer ${token}`});
   const notify=(message)=>{setToast(message); window.setTimeout(()=>setToast(''),2800)};
   const logout=()=>{localStorage.removeItem('careerflow_token');setToken(null);setItems([]);setStats(null);setUser(null)};
-  const refresh=async()=>{setLoading(true);try {const [applications,dashboard,me]=await Promise.all([fetch(`${API}/applications`,{headers:headers()}),fetch(`${API}/dashboard`,{headers:headers()}),fetch(`${API}/auth/me`,{headers:headers()})]);if (!applications.ok || !dashboard.ok || !me.ok) { logout(); return; }setItems(await applications.json()); setStats(await dashboard.json()); setUser(await me.json());} catch { notify('Could not reach CareerFlow. Please try again.'); } finally { setLoading(false); }};
+  const refresh=async()=>{setLoading(true);try {const [applications,dashboard,me]=await Promise.all([fetch(`${API}/applications`,{headers:headers()}),fetch(`${API}/dashboard`,{headers:headers()}),fetch(`${API}/auth/me`,{headers:headers()})]);if (!applications.ok || !dashboard.ok || !me.ok) { logout(); return; }setItems(await applications.json()); setStats(await dashboard.json()); setUser(await me.json());} catch { notify('Could not reach CareerFlow. Please try again.'); } finally { setLoading(false); setAuthChecking(false); }};
   useEffect(()=>{if(token) refresh()},[token]);
   useEffect(()=>{const timer=setInterval(()=>setNow(new Date()),60000);return ()=>clearInterval(timer)},[]);
   const auth=async(e)=>{e.preventDefault();setError('');const data=Object.fromEntries(new FormData(e.target));if(authMode==='register'&&data.password!==data.confirmPassword)return setError('Passwords do not match.');delete data.confirmPassword;try {const response=await fetch(`${API}${authMode==='register'?'/auth/register':'/auth/login'}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const payload=await response.json();if(!response.ok)return setError(payload.detail||'Please check your details and try again.');localStorage.setItem('careerflow_token',payload.access_token);setToken(payload.access_token)} catch {setError('CareerFlow is unavailable. Please try again shortly.')}};
@@ -21,6 +22,7 @@ function App() {
   const remove=async(id)=>{if(!window.confirm('Remove this application from your pipeline?'))return;try {const response=await fetch(`${API}/applications/${id}`,{method:'DELETE',headers:headers()});if(!response.ok)throw new Error();notify('Application removed.');refresh()}catch{notify('Could not remove application.')}};
   const updateStatus=async(item,status)=>{try {const response=await fetch(`${API}/applications/${item.id}`,{method:'PUT',headers:headers(),body:JSON.stringify({status})});if(!response.ok)throw new Error();notify('Stage updated.');refresh()}catch{notify('Could not update the stage.')}};
   const sendFeedback=async(e)=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));try {const response=await fetch(`${API}/feedback`,{method:'POST',headers:headers(),body:JSON.stringify(data)});if(!response.ok)throw new Error();setFeedbackOpen(false);notify('Thanks — your feedback was sent.')}catch{notify('Could not send feedback. Please try again.')}};
+  if(authChecking)return <div className="session-check"><LoaderCircle className="spin" size={26}/></div>;
   if(!token)return <Auth mode={authMode} setMode={setAuthMode} auth={auth} error={error}/>;
   const visible=items.filter(x=>(filter==='All'||x.status===filter)&&`${x.company} ${x.role}`.toLowerCase().includes(query.toLowerCase()));
   const greeting=now.getHours()<12?'Good morning':now.getHours()<17?'Good afternoon':'Good evening';
