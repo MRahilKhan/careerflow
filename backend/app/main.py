@@ -45,7 +45,7 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     }
     return JSONResponse(status_code=422, content={"detail": messages.get(field, "Please check the highlighted fields and try again.")})
 
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "https://careerflow-one.vercel.app"], allow_origin_regex=r"chrome-extension://.*", allow_credentials=True, allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "https://careerflow-liart.vercel.app"], allow_origin_regex=r"chrome-extension://.*", allow_credentials=True, allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 
 LOGIN_WINDOW_SECONDS = 15 * 60
 LOGIN_MAX_ATTEMPTS = 5
