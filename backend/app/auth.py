@@ -12,10 +12,16 @@ from .database import get_db
 from .models import User
 
 
+# ============================================================
+# JWT CONFIGURATION
+# ============================================================
+
 SECRET_KEY = os.getenv("CAREERFLOW_SECRET_KEY")
 
 if not SECRET_KEY:
-    raise RuntimeError("CAREERFLOW_SECRET_KEY is not configured")
+    raise RuntimeError(
+        "CAREERFLOW_SECRET_KEY is not configured"
+    )
 
 if len(SECRET_KEY) < 32:
     raise RuntimeError(
@@ -26,11 +32,21 @@ if len(SECRET_KEY) < 32:
 ALGORITHM = "HS256"
 ACCESS_TOKEN_MINUTES = 60
 
+
+# ============================================================
+# PASSWORD HASHING
+# ============================================================
+
 pwd = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
     bcrypt__rounds=12,
 )
+
+
+# ============================================================
+# AUTHENTICATION
+# ============================================================
 
 security = HTTPBearer(auto_error=False)
 
@@ -39,16 +55,30 @@ def hash_password(password: str) -> str:
     return pwd.hash(password)
 
 
-def verify_password(password: str, password_hash: str) -> bool:
+def verify_password(
+    password: str,
+    password_hash: str,
+) -> bool:
     try:
-        return pwd.verify(password, password_hash)
+        return pwd.verify(
+            password,
+            password_hash,
+        )
     except Exception:
+        # Never expose password-hashing errors to the client.
         return False
 
 
+# ============================================================
+# TOKEN CREATION
+# ============================================================
+
 def create_token(user_id: int) -> str:
     now = datetime.now(timezone.utc)
-    expires = now + timedelta(minutes=ACCESS_TOKEN_MINUTES)
+
+    expires = now + timedelta(
+        minutes=ACCESS_TOKEN_MINUTES
+    )
 
     payload = {
         "sub": str(user_id),
@@ -65,29 +95,43 @@ def create_token(user_id: int) -> str:
     )
 
 
+# ============================================================
+# CURRENT USER
+# ============================================================
+
 def current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(
+        security
+    ),
     db: Session = Depends(get_db),
 ) -> User:
+
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
         )
+
+    token = credentials.credentials
 
     try:
         payload = jwt.decode(
-            credentials.credentials,
+            token,
             SECRET_KEY,
             algorithms=[ALGORITHM],
         )
 
+        # Only CareerFlow access tokens are accepted.
         if payload.get("type") != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication token",
-                headers={"WWW-Authenticate": "Bearer"},
+                headers={
+                    "WWW-Authenticate": "Bearer",
+                },
             )
 
         subject = payload.get("sub")
@@ -96,10 +140,30 @@ def current_user(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication token",
-                headers={"WWW-Authenticate": "Bearer"},
+                headers={
+                    "WWW-Authenticate": "Bearer",
+                },
             )
 
-        user_id = int(subject)
+        try:
+            user_id = int(subject)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication token",
+                headers={
+                    "WWW-Authenticate": "Bearer",
+                },
+            )
+
+        if user_id <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication token",
+                headers={
+                    "WWW-Authenticate": "Bearer",
+                },
+            )
 
     except HTTPException:
         raise
@@ -108,16 +172,23 @@ def current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired session",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
         )
 
-    user = db.get(User, user_id)
+    user = db.get(
+        User,
+        user_id,
+    )
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account not found",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
         )
 
     return user
