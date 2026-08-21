@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from .models import User
 
-SECRET_KEY = os.getenv("CAREERFLOW_SECRET_KEY") or secrets.token_urlsafe(48)
+SECRET_KEY = os.getenv("CAREERFLOW_SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError("CAREERFLOW_SECRET_KEY is not configured")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_MINUTES = 60
 pwd = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
