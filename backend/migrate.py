@@ -1,9 +1,14 @@
+from pathlib import Path
+
 from alembic import command
 from alembic.config import Config
 
 
+BASE_DIR = Path(__file__).resolve().parent
+
+
 def main() -> None:
-    config = Config("alembic.ini")
+    config = Config(str(BASE_DIR / "alembic.ini"))
     command.upgrade(config, "head")
 
 
