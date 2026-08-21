@@ -1,6 +1,8 @@
 from datetime import datetime
+
 from sqlalchemy import DateTime, ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
+
 from .database import Base
 
 
@@ -8,29 +10,42 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(80))
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    password_hash: Mapped[str] = mapped_column(String(255))
 
-    applications: Mapped[list["Application"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
+    name: Mapped[str] = mapped_column(
+        String(80)
     )
 
-    feedback: Mapped[list["Feedback"]] = relationship(
-        back_populates="user",
-        cascade="all, delete-orphan",
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        index=True,
+    )
+
+    password_hash: Mapped[str] = mapped_column(
+        String(255)
     )
 
 
 class Application(Base):
     __tablename__ = "applications"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
 
-    company: Mapped[str] = mapped_column(String(120), index=True)
-    role: Mapped[str] = mapped_column(String(120))
-    location: Mapped[str] = mapped_column(String(120), default="Remote")
+    company: Mapped[str] = mapped_column(
+        String(120),
+        index=True,
+    )
+
+    role: Mapped[str] = mapped_column(
+        String(120)
+    )
+
+    location: Mapped[str] = mapped_column(
+        String(120),
+        default="Remote",
+    )
 
     employment_type: Mapped[str] = mapped_column(
         String(30),
@@ -83,40 +98,23 @@ class Application(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("users.id"),
         index=True,
-    )
-
-    user: Mapped["User"] = relationship(
-        back_populates="applications",
-    )
-
-    events: Mapped[list["ApplicationEvent"]] = relationship(
-        back_populates="application",
-        cascade="all, delete-orphan",
-        order_by="ApplicationEvent.created_at",
-    )
-
-    interviews: Mapped[list["Interview"]] = relationship(
-        back_populates="application",
-        cascade="all, delete-orphan",
-        order_by="Interview.scheduled_at",
-    )
-
-    follow_ups: Mapped[list["FollowUp"]] = relationship(
-        back_populates="application",
-        cascade="all, delete-orphan",
-        order_by="FollowUp.scheduled_for",
     )
 
 
 class ApplicationEvent(Base):
     __tablename__ = "application_events"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
 
     application_id: Mapped[int] = mapped_column(
-        ForeignKey("applications.id", ondelete="CASCADE"),
+        ForeignKey(
+            "applications.id",
+            ondelete="CASCADE",
+        ),
         index=True,
     )
 
@@ -126,7 +124,7 @@ class ApplicationEvent(Base):
     )
 
     title: Mapped[str] = mapped_column(
-        String(160),
+        String(160)
     )
 
     description: Mapped[str | None] = mapped_column(
@@ -140,23 +138,24 @@ class ApplicationEvent(Base):
         index=True,
     )
 
-    application: Mapped["Application"] = relationship(
-        back_populates="events",
-    )
-
 
 class Interview(Base):
     __tablename__ = "interviews"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
 
     application_id: Mapped[int] = mapped_column(
-        ForeignKey("applications.id", ondelete="CASCADE"),
+        ForeignKey(
+            "applications.id",
+            ondelete="CASCADE",
+        ),
         index=True,
     )
 
     interview_type: Mapped[str] = mapped_column(
-        String(60),
+        String(60)
     )
 
     scheduled_at: Mapped[datetime] = mapped_column(
@@ -189,18 +188,19 @@ class Interview(Base):
         index=True,
     )
 
-    application: Mapped["Application"] = relationship(
-        back_populates="interviews",
-    )
-
 
 class FollowUp(Base):
     __tablename__ = "follow_ups"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
 
     application_id: Mapped[int] = mapped_column(
-        ForeignKey("applications.id", ondelete="CASCADE"),
+        ForeignKey(
+            "applications.id",
+            ondelete="CASCADE",
+        ),
         index=True,
     )
 
@@ -215,7 +215,7 @@ class FollowUp(Base):
     )
 
     note: Mapped[str] = mapped_column(
-        String(500),
+        String(500)
     )
 
     status: Mapped[str] = mapped_column(
@@ -224,22 +224,20 @@ class FollowUp(Base):
         index=True,
     )
 
-    application: Mapped["Application"] = relationship(
-        back_populates="follow_ups",
-    )
-
 
 class Feedback(Base):
     __tablename__ = "feedback"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
 
     subject: Mapped[str] = mapped_column(
-        String(120),
+        String(120)
     )
 
     message: Mapped[str] = mapped_column(
-        Text,
+        Text
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -249,10 +247,6 @@ class Feedback(Base):
     )
 
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("users.id"),
         index=True,
-    )
-
-    user: Mapped["User"] = relationship(
-        back_populates="feedback",
     )
