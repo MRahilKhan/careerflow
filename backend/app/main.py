@@ -1,5 +1,6 @@
 from collections import Counter, defaultdict, deque
 from time import monotonic
+import os
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -50,11 +51,9 @@ app = FastAPI(
 
 allowed_origins = [
     origin.strip()
-    for origin in (
-        __import__("os").getenv(
-            "CAREERFLOW_ALLOWED_ORIGINS",
-            "http://localhost:5173,https://careerflow-liart.vercel.app",
-        )
+    for origin in os.getenv(
+        "CAREERFLOW_ALLOWED_ORIGINS",
+        "http://localhost:5173,https://careerflow-liart.vercel.app",
     ).split(",")
     if origin.strip()
 ]
@@ -62,10 +61,19 @@ allowed_origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"chrome-extension://.*",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+    ],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+    ],
 )
 
 
@@ -91,6 +99,7 @@ async def validation_error_handler(
         ),
         "name": "Please enter your name.",
         "job_url": "Please enter a valid HTTP or HTTPS job URL.",
+        "meeting_url": "Please enter a valid HTTP or HTTPS meeting URL.",
     }
 
     return JSONResponse(
@@ -119,9 +128,10 @@ def get_client_ip(request: Request) -> str:
     """
     Return the client address visible to the application.
 
-    Vercel/proxies may provide forwarding headers, but those headers
-    must not automatically be trusted as an authentication identity.
+    Forwarded headers are intentionally not trusted here because
+    they can be spoofed unless they are validated by a trusted proxy.
     """
+
     if request.client:
         return request.client.host
 
@@ -135,7 +145,10 @@ def check_login_allowed(request: Request) -> str:
     block = login_blocks.get(client_ip)
 
     if block and block[0] > now:
-        remaining = max(1, int(block[0] - now))
+        remaining = max(
+            1,
+            int(block[0] - now),
+        )
 
         raise HTTPException(
             status_code=429,
@@ -261,11 +274,20 @@ def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            headers={
+                "WWW-Authenticate": "Bearer",
+            },
         )
 
-    login_attempts.pop(client_ip, None)
-    login_blocks.pop(client_ip, None)
+    login_attempts.pop(
+        client_ip,
+        None,
+    )
+
+    login_blocks.pop(
+        client_ip,
+        None,
+    )
 
     return Token(
         access_token=create_token(user.id),
@@ -468,10 +490,11 @@ def list_application_events(
     query = (
         select(ApplicationEvent)
         .where(
-            ApplicationEvent.application_id
-            == application_id
+            ApplicationEvent.application_id == application_id
         )
-        .order_by(ApplicationEvent.created_at.asc())
+        .order_by(
+            ApplicationEvent.created_at.asc()
+        )
     )
 
     return db.scalars(query).all()
@@ -546,7 +569,9 @@ def list_interviews(
         .where(
             Interview.application_id == application_id
         )
-        .order_by(Interview.scheduled_at.asc())
+        .order_by(
+            Interview.scheduled_at.asc()
+        )
     )
 
     return db.scalars(query).all()
@@ -595,7 +620,10 @@ def create_interview(
     event = ApplicationEvent(
         application_id=application.id,
         event_type="interview",
-        title=f"Interview scheduled: {interview.interview_type}",
+        title=(
+            f"Interview scheduled: "
+            f"{interview.interview_type}"
+        ),
     )
 
     db.add(event)
@@ -635,7 +663,9 @@ def list_follow_ups(
         .where(
             FollowUp.application_id == application_id
         )
-        .order_by(FollowUp.scheduled_for.asc())
+        .order_by(
+            FollowUp.scheduled_for.asc()
+        )
     )
 
     return db.scalars(query).all()
@@ -745,7 +775,9 @@ def dashboard(
     )
 
     response_rate = (
-        round((responded / len(items)) * 100)
+        round(
+            (responded / len(items)) * 100
+        )
         if items
         else 0
     )
