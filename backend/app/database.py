@@ -1,52 +1,52 @@
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 
-DATABASE_URL = (
-    os.getenv("CAREERFLOW_DATABASE_URL")
-    or os.getenv("POSTGRES_URL")
-    or os.getenv("DATABASE_URL")
-)
+def get_database_url() -> str:
+    database_url = (
+        os.getenv("CAREERFLOW_DATABASE_URL")
+        or os.getenv("POSTGRES_URL")
+        or os.getenv("DATABASE_URL")
+    )
 
-if not DATABASE_URL:
-    if os.getenv("VERCEL"):
-        raise RuntimeError(
-            "No database configured. Set CAREERFLOW_DATABASE_URL, POSTGRES_URL, "
-            "or DATABASE_URL in the Vercel project's Environment Variables "
-            "(Production) and redeploy."
+    if not database_url:
+        if os.getenv("VERCEL"):
+            raise RuntimeError(
+                "No database configured. Set CAREERFLOW_DATABASE_URL, "
+                "POSTGRES_URL, or DATABASE_URL in the Vercel "
+                "Environment Variables and redeploy."
+            )
+
+        return "sqlite:///./careerflow.db"
+
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace(
+            "postgres://",
+            "postgresql+psycopg://",
+            1,
         )
 
-    DATABASE_URL = "sqlite:///./careerflow.db"
+    elif database_url.startswith("postgresql://"):
+        database_url = database_url.replace(
+            "postgresql://",
+            "postgresql+psycopg://",
+            1,
+        )
+
+    return database_url
 
 
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgres://",
-        "postgresql+psycopg://",
-        1,
-    )
-elif DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgresql://",
-        "postgresql+psycopg://",
-        1,
-    )
-
-
-_scheme = (
-    DATABASE_URL.split("://", 1)[0]
-    if "://" in DATABASE_URL
-    else DATABASE_URL
-)
-
-print(f"[CareerFlow] Database backend: {_scheme}")
+DATABASE_URL = get_database_url()
 
 
 connect_args = (
-    {"check_same_thread": False}
-    if DATABASE_URL.startswith("sqlite://")
-    else {}
+    {}
+    if DATABASE_URL.startswith("postgresql+")
+    else {
+        "check_same_thread": False,
+    }
 )
 
 
